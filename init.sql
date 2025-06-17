@@ -1,6 +1,6 @@
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  username TEXT NOT NULL,
+  username TEXT UNIQUE NOT NULL,
   user_pwd TEXT NOT NULL,
   base_currency TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

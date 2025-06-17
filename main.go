@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/khralenok/all-wallets-api/database"
+	"github.com/khralenok/all-wallets-api/handlers"
+	"github.com/khralenok/all-wallets-api/utilities"
 )
 
 func main() {
@@ -20,6 +22,11 @@ func main() {
 	defer database.DB.Close()
 
 	router := gin.Default()
+
+	//User Management
+	router.POST("/signin", handlers.CreateUser)
+	router.POST("/login", handlers.LoginUser)
+	router.GET("/profile", utilities.AuthMiddleware(), handlers.GetProfile)
 
 	router.Run(":8080")
 }
