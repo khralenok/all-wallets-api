@@ -1,7 +1,7 @@
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username TEXT NOT NULL,
-  password TEXT NOT NULL,
+  user_pwd TEXT NOT NULL,
   base_currency TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -18,7 +18,7 @@ CREATE TABLE wallets (
 CREATE TABLE wallet_users (
   wallet_id INT REFERENCES wallets(id),
   user_id INT REFERENCES users(id),
-  user_role TEXT NOT NULL,
+  user_role TEXT NOT NULL
 );
 
 CREATE TABLE transactions (
@@ -37,12 +37,10 @@ CREATE TABLE recurrent_payments (
   is_deposit BOOLEAN NOT NULL,
   category TEXT NOT NULL, 
   wallet_id INT REFERENCES wallets(id),
-
   frequency TEXT CHECK (frequency IN ('daily', 'weekly', 'monthly','yearly')),
   scheduled_day INT, -- for monthly/yearly
   scheduled_weekday INT, -- for weekly
   scheduled_month INT, -- for yearly
-
   next_run TIMESTAMP,
   end_at TIMESTAMP, -- null if infinite
   creator_id INT REFERENCES users(id),
