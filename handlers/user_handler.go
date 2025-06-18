@@ -106,11 +106,10 @@ func GetProfile(context *gin.Context) {
 	for rows.Next() {
 		var nextWallet models.Wallet
 		err := rows.Scan(&nextWallet.ID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.LastSnapshot, &nextWallet.CreatedAt)
+
 		if err != nil {
-			if err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't read next row in the wallets list"})
-				return
-			}
+			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't read next row in the wallets list"})
+			return
 		}
 
 		userWallets = append(userWallets, nextWallet)
