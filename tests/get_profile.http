@@ -1,2 +1,2 @@
 GET http://localhost:8080/profile
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAyMTU4NDgsInVzZXJfaWQiOjF9.F1O6jjHd9BmJ-DoYlUw9707X0-071saPXtl0MR4PcG4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAzMDI1MDksInVzZXJfaWQiOjF9.cIB8IvpiDYY8yQ_pxugUxNVWQZbxhsvtkjoS4S_Kbsg

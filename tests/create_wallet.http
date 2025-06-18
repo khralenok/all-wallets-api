@@ -1,0 +1,8 @@
+POST http://localhost:8080/new-wallet
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAzMDIwMjEsInVzZXJfaWQiOjF9.1H8bRF0At-XLH3r235UqDSeDO0BdLjyj5XiEmI3iRuE
+Content-Type: application/json
+
+{
+    "wallet_name": "test_wallet",
+    "currency": "USD"
+}

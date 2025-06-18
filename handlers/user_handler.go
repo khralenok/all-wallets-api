@@ -92,7 +92,31 @@ func GetProfile(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, user)
+	var userWallets []models.Wallet
+
+	query = "SELECT w.* FROM wallets w JOIN wallet_users wu ON wu.wallet_id = w.id WHERE wu.user_id = $1"
+
+	rows, err := database.DB.Query(query, userID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't get wallets list from database"})
+		return
+	}
+
+	for rows.Next() {
+		var nextWallet models.Wallet
+		err := rows.Scan(&nextWallet.ID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.LastSnapshot, &nextWallet.CreatedAt)
+		if err != nil {
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't read next row in the wallets list"})
+				return
+			}
+		}
+
+		userWallets = append(userWallets, nextWallet)
+	}
+
+	context.JSON(http.StatusOK, gin.H{"user": user, "wallets": userWallets})
 }
 
 func getUserByUsername(username string, context *gin.Context) (models.User, error) {

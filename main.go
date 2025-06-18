@@ -28,5 +28,8 @@ func main() {
 	router.POST("/login", handlers.LoginUser)
 	router.GET("/profile", utilities.AuthMiddleware(), handlers.GetProfile)
 
+	//Wallets Management
+	router.POST("/new-wallet", utilities.AuthMiddleware(), handlers.CreateWallet)
+
 	router.Run(":8080")
 }

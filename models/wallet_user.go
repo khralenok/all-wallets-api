@@ -1,7 +1,10 @@
 package models
 
-type WalletUsers struct {
-	WalletID int    `json:"wallet_id"`
-	UserID   int    `json:"user_id"`
-	UserRole string `json:"user_role"`
+import "time"
+
+type WalletUser struct {
+	WalletID  int       `json:"wallet_id"`
+	UserID    int       `json:"user_id"`
+	UserRole  string    `json:"user_role"`
+	CreatedAt time.Time `json:"created_at"`
 }

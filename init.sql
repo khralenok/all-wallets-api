@@ -10,15 +10,16 @@ CREATE TABLE wallets (
   id SERIAL PRIMARY KEY,
   wallet_name TEXT NOT NULL,
   currency TEXT NOT NULL,
-  balance INT NOT NULL,
-  last_snapshot TIMESTAMP,
+  balance INT NOT NULL DEFAULT 0,
+  last_snapshot TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE wallet_users (
   wallet_id INT REFERENCES wallets(id),
   user_id INT REFERENCES users(id),
-  user_role TEXT NOT NULL
+  user_role TEXT CHECK (user_role IN('spectator','user','admin')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE transactions (
