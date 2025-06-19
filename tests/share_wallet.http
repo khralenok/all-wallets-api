@@ -1,8 +1,8 @@
-POST http://localhost:8080/new-wallet
+POST http://localhost:8080/share-wallet
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTAzOTExNDksInVzZXJfaWQiOjF9.mVd-C8Wv8HW1tzEU5R8qnB0Z6mOQupGg9RzKxvba-4w
-Content-Type: application/json
 
 {
-    "wallet_name": "test_wallet",
-    "currency": "USD"
+    "wallet_id": 1,
+    "username": "test_user_2",
+    "user_role": "user"
 }

@@ -30,6 +30,7 @@ func main() {
 
 	//Wallets Management
 	router.POST("/new-wallet", utilities.AuthMiddleware(), handlers.CreateWallet)
+	router.POST("/share-wallet", utilities.AuthMiddleware(), handlers.ShareWallet)
 
 	router.Run(":8080")
 }

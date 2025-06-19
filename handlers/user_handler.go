@@ -13,7 +13,7 @@ func CreateUser(context *gin.Context) {
 	var newUser models.User
 
 	if err := context.BindJSON(&newUser); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 	}
 
 	query := "SELECT * FROM users WHERE username=$1"
@@ -25,14 +25,14 @@ func CreateUser(context *gin.Context) {
 	}
 
 	if rows.Next() {
-		context.JSON(http.StatusConflict, gin.H{"error": "username_already_exists", "message": "A user with this username already exists."})
+		context.JSON(http.StatusConflict, gin.H{"error": "Status Conflict", "message": "This username already taken"})
 		return
 	}
 
 	var passwordHash string
 
 	if passwordHash, err = utilities.HashPassword(newUser.Password); err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Password encryption failed"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Password encryption failed"})
 		return
 	}
 
@@ -41,7 +41,7 @@ func CreateUser(context *gin.Context) {
 	err = database.DB.QueryRow(query, newUser.Username, passwordHash, newUser.BaseCurrency).Scan(&newUser.ID, &newUser.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert user"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert user"})
 		return
 	}
 
@@ -52,26 +52,26 @@ func LoginUser(context *gin.Context) {
 	var input models.LoginInputs
 
 	if err := context.ShouldBindJSON(&input); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 	}
 
 	var user models.User
 	var err error
 
 	if user, err = getUserByUsername(input.Username, context); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "There is no such user"})
 		return
 	}
 
 	if !utilities.CheckPasswordHash(input.Password, user.Password) {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Credentials"})
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Status Unauthorized", "message": "Invalid credentials"})
 		return
 	}
 
 	token, err := utilities.GenerateJWT(user.ID)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Token generation failed"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Token generation failed"})
 		return
 	}
 
@@ -88,7 +88,7 @@ func GetProfile(context *gin.Context) {
 	err := database.DB.QueryRow(query, userID).Scan(&user.ID, &user.Username, &user.Password, &user.BaseCurrency, &user.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get user data from database"})
 		return
 	}
 
@@ -99,7 +99,7 @@ func GetProfile(context *gin.Context) {
 	rows, err := database.DB.Query(query, userID)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't get wallets list from database"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get wallets list from database"})
 		return
 	}
 
@@ -108,7 +108,7 @@ func GetProfile(context *gin.Context) {
 		err := rows.Scan(&nextWallet.ID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.LastSnapshot, &nextWallet.CreatedAt)
 
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": "Can't read next row in the wallets list"})
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't read next row in the wallets list"})
 			return
 		}
 
@@ -124,7 +124,7 @@ func getUserByUsername(username string, context *gin.Context) (models.User, erro
 	err := database.DB.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.BaseCurrency, &user.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return models.User{}, err
 	}
 

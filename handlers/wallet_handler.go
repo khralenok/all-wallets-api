@@ -11,17 +11,12 @@ import (
 func CreateWallet(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	//1. Validate inputs +
-	//2. Create new wallet +
-	//3. Create new wallet user
-	//4. Return success message
-
 	var request models.NewWalletRequest
 	var newWallet models.Wallet
 	var newWalletUser models.WalletUser
 
 	if err := context.BindJSON(&request); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
@@ -30,7 +25,7 @@ func CreateWallet(context *gin.Context) {
 	err := database.DB.QueryRow(query, request.WalletName, request.Currency).Scan(&newWallet.ID, &newWallet.Balance, &newWallet.LastSnapshot, &newWallet.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to insert new wallet data into the database"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet data into the database"})
 		return
 	}
 
@@ -46,7 +41,7 @@ func CreateWallet(context *gin.Context) {
 	err = database.DB.QueryRow(query, newWalletUser.WalletID, newWalletUser.UserID, newWalletUser.UserRole).Scan(&newWalletUser.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to insert new wallet user data into the database"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
 		return
 	}
 
