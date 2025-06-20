@@ -12,73 +12,108 @@ import (
 func ShareWallet(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	var supplicant models.WalletUser
-	var existingUser models.WalletUser
-	var newWalletUser models.WalletUser
 	var request models.NewWalletUserRequest
-	var userToAdd models.User
 
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	//1. Check if user who request adding have enough permissions and wallet exists
+	if !checkUserPermissions(userID, request.WalletID, context) {
+		return
+	}
+
+	newUserId := getIdByUsername(request.Username, context)
+
+	if newUserId == -1 {
+		return
+	}
+
+	if !checkWalletUserUnique(newUserId, request.WalletID, context) {
+		return
+	}
+
+	if !validateRoleInput(request.UserRole, context) {
+		return
+	}
+
+	newWalletUser := createWalletUser(request.WalletID, newUserId, request.UserRole, context)
+
+	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
+}
+
+func checkUserPermissions(userID, walletID int, context *gin.Context) bool {
+	var supplicant models.WalletUser
 
 	query := "SELECT * FROM wallet_users WHERE user_id=$1 and wallet_id=$2"
 
-	err := database.DB.QueryRow(query, userID, request.WalletID).Scan(&supplicant.WalletID, &supplicant.UserID, &supplicant.UserRole, &supplicant.CreatedAt)
+	err := database.DB.QueryRow(query, userID, walletID).Scan(&supplicant.WalletID, &supplicant.UserID, &supplicant.UserRole, &supplicant.CreatedAt)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to fetch supplicant user data"})
-		return
+		return false
 	}
 
 	if supplicant.UserRole != "admin" {
 		context.JSON(http.StatusForbidden, gin.H{"error": "Status Forbidden", "message": "You have not enough no permission to add new users"})
-		return
+		return false
 	}
 
-	//2. Check if user we should add exist and not in the list of users already
+	return true
+}
 
-	query = "SELECT * FROM users WHERE username=$1"
+func getIdByUsername(username string, context *gin.Context) int {
+	var userToAdd models.User
 
-	err = database.DB.QueryRow(query, request.Username).Scan(&userToAdd.ID, &userToAdd.Username, &userToAdd.Password, &userToAdd.BaseCurrency, &userToAdd.CreatedAt)
+	query := "SELECT * FROM users WHERE username=$1"
+
+	err := database.DB.QueryRow(query, username).Scan(&userToAdd.ID, &userToAdd.Username, &userToAdd.Password, &userToAdd.BaseCurrency, &userToAdd.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "There is no such user"})
-		return
+		return -1
 	} else if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't fetch user data"})
-		return
+		return -1
 	}
 
-	query = "SELECT * FROM wallet_users WHERE user_id=$1 and wallet_id=$2"
+	return userToAdd.ID
+}
 
-	err = database.DB.QueryRow(query, userToAdd.ID, request.WalletID).Scan(&existingUser.WalletID, &existingUser.UserID, &existingUser.UserRole, &existingUser.CreatedAt)
+func checkWalletUserUnique(userID, walletID int, context *gin.Context) bool {
+	var existingUser models.WalletUser
+	query := "SELECT * FROM wallet_users WHERE user_id=$1 and wallet_id=$2"
+
+	err := database.DB.QueryRow(query, userID, walletID).Scan(&existingUser.WalletID, &existingUser.UserID, &existingUser.UserRole, &existingUser.CreatedAt)
 
 	if err != sql.ErrNoRows {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "This user already have access to this wallet"})
-		return
+		return false
 	}
 
-	//3. Check if role value is appropriate
+	return true
+}
 
+func validateRoleInput(userRole string, context *gin.Context) bool {
 	validRoles := map[string]bool{"admin": true, "user": true, "spectator": true}
 
-	if !validRoles[request.UserRole] {
+	if !validRoles[userRole] {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "User role value is unacceptable"})
-		return
+		return false
 	}
 
-	//4. Create new row in wallet users with corresponding data
-	query = "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING wallet_id, user_id, user_role, created_at"
-	err = database.DB.QueryRow(query, request.WalletID, userToAdd.ID, request.UserRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
+	return true
+}
+
+func createWalletUser(walletID, userID int, userRole string, context *gin.Context) models.WalletUser {
+	var newWalletUser models.WalletUser
+	query := "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING wallet_id, user_id, user_role, created_at"
+	err := database.DB.QueryRow(query, walletID, userID, userRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "detail": userToAdd.ID, "message": "Failed to insert new wallet user data into the database"})
-		return
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
+		return models.WalletUser{}
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
+	return newWalletUser
 }
