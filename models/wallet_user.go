@@ -14,3 +14,8 @@ type NewWalletUserRequest struct {
 	Username string `json:"username"`
 	UserRole string `json:"user_role"`
 }
+
+type RemoveWalletUserRequest struct {
+	WalletID int    `json:"wallet_id"`
+	Username string `json:"username"`
+}

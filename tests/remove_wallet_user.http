@@ -1,0 +1,8 @@
+POST http://localhost:8080/remove-wallet-user
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA0NzQxNjQsInVzZXJfaWQiOjF9.OnYXPai2fqi95BXd_TSdOlYytZaZe33jFXKS5rbUu94
+Content-Type: application/json
+
+{
+    "wallet_id": 1,
+    "username": "test_user_2"
+}

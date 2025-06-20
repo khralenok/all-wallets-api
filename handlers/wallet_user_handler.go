@@ -9,7 +9,7 @@ import (
 	"github.com/khralenok/all-wallets-api/models"
 )
 
-func ShareWallet(context *gin.Context) {
+func AddWalletUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
 	var request models.NewWalletUserRequest
@@ -40,6 +40,38 @@ func ShareWallet(context *gin.Context) {
 	newWalletUser := createWalletUser(request.WalletID, newUserId, request.UserRole, context)
 
 	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
+}
+
+func RemoveWalletUser(context *gin.Context) {
+	userID := context.MustGet("userID").(int)
+
+	var request models.RemoveWalletUserRequest
+
+	if err := context.BindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
+		return
+	}
+
+	if !checkUserPermissions(userID, request.WalletID, context) {
+		return
+	}
+
+	UserToDeleteID := getIdByUsername(request.Username, context)
+
+	if UserToDeleteID == -1 {
+		return
+	}
+
+	query := "DELETE FROM wallet_users WHERE user_id=$1 AND wallet_id=$2"
+
+	_, err := database.DB.Exec(query, UserToDeleteID, request.WalletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this user"})
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{"status": "No content", "message": "Wallet User was successfully deleted"})
+
 }
 
 func checkUserPermissions(userID, walletID int, context *gin.Context) bool {
