@@ -13,17 +13,17 @@ func ShareWallet(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
 	var supplicant models.WalletUser
+	var existingUser models.WalletUser
 	var newWalletUser models.WalletUser
 	var request models.NewWalletUserRequest
-
-	//1. Get inputs
+	var userToAdd models.User
 
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	//4. Check if user who request adding have enough permissions and wallet exists
+	//1. Check if user who request adding have enough permissions and wallet exists
 
 	query := "SELECT * FROM wallet_users WHERE user_id=$1 and wallet_id=$2"
 
@@ -39,9 +39,7 @@ func ShareWallet(context *gin.Context) {
 		return
 	}
 
-	//3. Check if user we should add exist and not in the list of users already
-
-	var userToAdd models.User
+	//2. Check if user we should add exist and not in the list of users already
 
 	query = "SELECT * FROM users WHERE username=$1"
 
@@ -55,8 +53,6 @@ func ShareWallet(context *gin.Context) {
 		return
 	}
 
-	var existingUser models.WalletUser
-
 	query = "SELECT * FROM wallet_users WHERE user_id=$1 and wallet_id=$2"
 
 	err = database.DB.QueryRow(query, userToAdd.ID, request.WalletID).Scan(&existingUser.WalletID, &existingUser.UserID, &existingUser.UserRole, &existingUser.CreatedAt)
@@ -66,7 +62,7 @@ func ShareWallet(context *gin.Context) {
 		return
 	}
 
-	//4. Check if role value is appropriate
+	//3. Check if role value is appropriate
 
 	validRoles := map[string]bool{"admin": true, "user": true, "spectator": true}
 
@@ -75,7 +71,7 @@ func ShareWallet(context *gin.Context) {
 		return
 	}
 
-	//5. Create new row in wallet users with corresponding data
+	//4. Create new row in wallet users with corresponding data
 	query = "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING wallet_id, user_id, user_role, created_at"
 	err = database.DB.QueryRow(query, request.WalletID, userToAdd.ID, request.UserRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
 
