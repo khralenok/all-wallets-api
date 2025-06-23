@@ -9,3 +9,9 @@ type User struct {
 	BaseCurrency string    `json:"base_currency"`
 	CreatedAt    time.Time `json:"created_at"`
 }
+
+type UserOutput struct {
+	ID           int    `json:"id"`
+	Username     string `json:"username"`
+	BaseCurrency string `json:"base_currency"`
+}

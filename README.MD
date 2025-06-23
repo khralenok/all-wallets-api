@@ -2,10 +2,19 @@
 
 With AllWallets API users might create and share wallets and track their finances, which make it fit great for family or small team finance tracking
 
+## What you already can do
+
+- Create user
+- Create wallet
+- Delete wallet
+- Share wallet with another user
+- Unshare it back
+
 ## Upcoming updates
 
-- User role management
-- Adding transactions
+- Adding new transaction
+- Balance calculation
+- Multi-currency support
 ...
 
 ## Join my Telegram and Threads for Updates

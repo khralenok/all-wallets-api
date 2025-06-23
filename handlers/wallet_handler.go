@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/database"
@@ -46,4 +47,44 @@ func CreateWallet(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusCreated, gin.H{"new_wallet": newWallet, "new_wallet_user": newWalletUser})
+}
+
+func DeleteWallet(context *gin.Context) {
+	userID := context.MustGet("userID").(int)
+	walletID, err := strconv.Atoi(context.Param("wallet_id"))
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
+		return
+	}
+
+	// 2. Check if user have permission to delete wallet
+
+	if !checkUserPermissions(userID, walletID, context) {
+		return
+	}
+
+	// 4. Delete all wallet users from wallet users
+
+	query := "DELETE FROM wallet_users WHERE wallet_id=$1"
+
+	_, err = database.DB.Exec(query, walletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this wallet users"})
+		return
+	}
+
+	// 3. Delete row from wallets
+
+	query = "DELETE FROM wallets WHERE id=$1"
+
+	_, err = database.DB.Exec(query, walletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this wallet"})
+		return
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{"status": "No content", "message": "Wallet User was successfully deleted"})
 }

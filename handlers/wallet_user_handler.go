@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/database"
@@ -42,29 +43,35 @@ func AddWalletUser(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
 }
 
-func RemoveWalletUser(context *gin.Context) {
+func DeleteWalletUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
+	walletID, err := strconv.Atoi(context.Param("wallet_id"))
 
-	var request models.RemoveWalletUserRequest
-
-	if err := context.BindJSON(&request); err != nil {
+	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	if !checkUserPermissions(userID, request.WalletID, context) {
+	username := context.Param("username")
+
+	if username == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	UserToDeleteID := getIdByUsername(request.Username, context)
+	if !checkUserPermissions(userID, walletID, context) {
+		return
+	}
 
-	if UserToDeleteID == -1 {
+	userToDeleteID := getIdByUsername(username, context)
+
+	if userToDeleteID == -1 {
 		return
 	}
 
 	query := "DELETE FROM wallet_users WHERE user_id=$1 AND wallet_id=$2"
 
-	_, err := database.DB.Exec(query, UserToDeleteID, request.WalletID)
+	_, err = database.DB.Exec(query, userToDeleteID, walletID)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this user"})

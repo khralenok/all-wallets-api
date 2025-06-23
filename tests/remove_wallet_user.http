@@ -1,8 +1,2 @@
-POST http://localhost:8080/remove-wallet-user
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA0NzQxNjQsInVzZXJfaWQiOjF9.OnYXPai2fqi95BXd_TSdOlYytZaZe33jFXKS5rbUu94
-Content-Type: application/json
-
-{
-    "wallet_id": 1,
-    "username": "test_user_2"
-}
+DELETE http://localhost:8080/remove-wallet-user/wallet/2/username/test_user
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA3MzM1MzIsInVzZXJfaWQiOjJ9.IwQkmuabj1OOFX6tQBmRsPnD2khRWXwCEhjOr3p3KmQ
