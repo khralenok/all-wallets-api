@@ -5,6 +5,7 @@ With AllWallets API users might create and share wallets and track their finance
 ## What you already can do
 
 - Create user
+- Delete user
 - Create wallet
 - Delete wallet
 - Share wallet with another user
