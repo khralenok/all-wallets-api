@@ -27,6 +27,7 @@ func main() {
 	router.POST("/signin", handlers.CreateUser)
 	router.POST("/login", handlers.LoginUser)
 	router.GET("/profile", utilities.AuthMiddleware(), handlers.GetProfile)
+	router.PUT("/delete-user", utilities.AuthMiddleware(), handlers.DeleteUser)
 
 	//Wallets Management
 	router.POST("/new-wallet", utilities.AuthMiddleware(), handlers.CreateWallet)

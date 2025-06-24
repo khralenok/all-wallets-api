@@ -1,9 +1,9 @@
 POST http://localhost:8080/share-wallet
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA3MzM1OTQsInVzZXJfaWQiOjF9.D6ZTCoL4rARJT1sDGUTkmw93gCcK1Gfuy8TA9-vVhlA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4MjQyNTcsInVzZXJfaWQiOjJ9._DxDDSh0asI2iTs4yXyMm6KsZY6HLglcrlhvWNRVNeg
 Content-Type: application/json
 
 {
-    "wallet_id": 3,
-    "username": "test_user_2",
+    "wallet_id": 2,
+    "username": "test_user",
     "user_role": "admin"
 }

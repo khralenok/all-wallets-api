@@ -103,10 +103,11 @@ func checkUserPermissions(userID, walletID int, context *gin.Context) bool {
 
 func getIdByUsername(username string, context *gin.Context) int {
 	var userToAdd models.User
+	var deleted_at sql.Null[string]
 
-	query := "SELECT * FROM users WHERE username=$1"
+	query := "SELECT * FROM users WHERE username=$1 AND is_deleted = FALSE"
 
-	err := database.DB.QueryRow(query, username).Scan(&userToAdd.ID, &userToAdd.Username, &userToAdd.Password, &userToAdd.BaseCurrency, &userToAdd.CreatedAt)
+	err := database.DB.QueryRow(query, username).Scan(&userToAdd.ID, &userToAdd.Username, &userToAdd.Password, &userToAdd.BaseCurrency, &userToAdd.CreatedAt, &userToAdd.IsDeleted, &deleted_at)
 
 	if err == sql.ErrNoRows {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "There is no such user"})

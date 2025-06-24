@@ -1,0 +1,2 @@
+PUT http://localhost:8080/delete-user
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4MjQzMzEsInVzZXJfaWQiOjF9.7hb1jOvpXFmwO2tgOfK9jhzMXNeAGJp7ROZzmgUTHXc
