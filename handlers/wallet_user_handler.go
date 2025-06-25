@@ -10,6 +10,7 @@ import (
 	"github.com/khralenok/all-wallets-api/models"
 )
 
+// Create new wallet user with provided role, based on target wallet id and username of user who need to be added. Can be permormed only by wallet admin.
 func AddWalletUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
@@ -43,6 +44,7 @@ func AddWalletUser(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
 }
 
+// Remove user from list of wallet users, so it can gain access to wallet anymore. Wallet ID and Username must be provided via url query
 func DeleteWalletUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 	walletID, err := strconv.Atoi(context.Param("wallet_id"))
@@ -78,7 +80,6 @@ func DeleteWalletUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusNoContent, gin.H{"status": "No content", "message": "Wallet User was successfully deleted"})
-
 }
 
 func checkUserPermissions(userID, walletID int, context *gin.Context) bool {

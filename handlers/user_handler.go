@@ -12,6 +12,7 @@ import (
 	"github.com/khralenok/all-wallets-api/utilities"
 )
 
+// Add new user in database or give http error in response. As input require json with username, password and base currency in JSON format
 func CreateUser(context *gin.Context) {
 	var input models.SigninInputs
 
@@ -42,6 +43,7 @@ func CreateUser(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"status": "Created"})
 }
 
+// Response with JWT Token user need to use other API handlers. As input require username and password in JSON format
 func LoginUser(context *gin.Context) {
 	var input models.LoginInputs
 
@@ -71,6 +73,7 @@ func LoginUser(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "Success", "token": token})
 }
 
+// Response with user data and brief data for all wallets which user participated in.
 func GetProfile(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
@@ -95,6 +98,7 @@ func GetProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"user": userOutput, "wallets": userWallets})
 }
 
+// Mark the user as deleted and remove them from all wallets they participated in. Can be performed only by user themself.
 func DeleteUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
