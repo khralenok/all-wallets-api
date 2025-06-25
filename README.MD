@@ -10,10 +10,11 @@ With AllWallets API users might create and share wallets and track their finance
 - Delete wallet
 - Share wallet with another user
 - Unshare it back
+- Add new income transaction
+- Add new expense transaction
 
 ## Upcoming updates
 
-- Adding new transaction
 - Balance calculation
 - Multi-currency support
 ...

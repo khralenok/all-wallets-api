@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/database"
 	"github.com/khralenok/all-wallets-api/models"
+	"github.com/khralenok/all-wallets-api/store"
 )
 
 // Create new wallet with provided name and currency and automatically create new wallet user with admin role based on user who call the function.
@@ -60,7 +61,7 @@ func DeleteWallet(context *gin.Context) {
 		return
 	}
 
-	if !checkUserPermissions(userID, walletID, context) {
+	if !store.CheckUserPermissions(userID, walletID, context) {
 		return
 	}
 

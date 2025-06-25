@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/database"
 	"github.com/khralenok/all-wallets-api/models"
+	"github.com/khralenok/all-wallets-api/store"
 	"github.com/khralenok/all-wallets-api/utilities"
 )
 
@@ -20,7 +19,7 @@ func CreateUser(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 	}
 
-	if err := checkIfUsernameUnique(input.Username, context); err != nil {
+	if err := store.CheckIfUsernameUnique(input.Username, context); err != nil {
 		return
 	}
 
@@ -52,7 +51,7 @@ func LoginUser(context *gin.Context) {
 		return
 	}
 
-	user, err := getUserByUsername(input.Username, context)
+	user, err := store.GetUserByUsername(input.Username, context)
 
 	if err != nil {
 		return
@@ -77,7 +76,7 @@ func LoginUser(context *gin.Context) {
 func GetProfile(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	user, err := getUserById(userID, context)
+	user, err := store.GetUserById(userID, context)
 
 	if err != nil {
 		return
@@ -89,7 +88,7 @@ func GetProfile(context *gin.Context) {
 	userOutput.Username = user.Username
 	userOutput.BaseCurrency = user.BaseCurrency
 
-	userWallets, err := getUserWallets(userID, context)
+	userWallets, err := store.GetUserWallets(userID, context)
 
 	if err != nil {
 		return
@@ -121,84 +120,4 @@ func DeleteUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, gin.H{"status": "Ok", "message": "User was successfully deleted"})
-}
-
-func getUserByUsername(username string, context *gin.Context) (models.User, error) {
-	var user models.User
-	var deleted_at sql.Null[string]
-
-	query := "SELECT * FROM users WHERE username=$1"
-	err := database.DB.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Password, &user.BaseCurrency, &user.CreatedAt, &user.IsDeleted, &deleted_at)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Bad Request", "message": "Invalid input format"})
-		return models.User{}, err
-	}
-
-	if user.IsDeleted {
-		context.JSON(http.StatusGone, gin.H{"error": "Gone", "message": "This user has been deleted"})
-		return models.User{}, errors.New("Gone")
-	}
-
-	return user, nil
-}
-
-func getUserById(userID int, context *gin.Context) (models.User, error) {
-	var user models.User
-	var deleted_at sql.Null[string]
-
-	query := "SELECT * FROM users WHERE id=$1 AND is_deleted = FALSE"
-	err := database.DB.QueryRow(query, userID).Scan(&user.ID, &user.Username, &user.Password, &user.BaseCurrency, &user.CreatedAt, &user.IsDeleted, &deleted_at)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get user data from database"})
-		return models.User{}, err
-	}
-
-	return user, nil
-}
-
-func getUserWallets(userID int, context *gin.Context) ([]models.WalletOutputSimple, error) {
-	var userWallets []models.WalletOutputSimple
-
-	query := "SELECT w.id AS wallet_id, w.wallet_name, w.currency, w.balance, wu.user_role FROM wallets w JOIN wallet_users wu ON wu.wallet_id = w.id WHERE wu.user_id = $1"
-
-	rows, err := database.DB.Query(query, userID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get wallets list from database"})
-		return userWallets, err
-	}
-
-	for rows.Next() {
-		var nextWallet models.WalletOutputSimple
-		err := rows.Scan(&nextWallet.WalletID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.UserRole)
-
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't read next row in the wallets list"})
-			return userWallets, err
-		}
-
-		userWallets = append(userWallets, nextWallet)
-	}
-
-	return userWallets, nil
-}
-
-func checkIfUsernameUnique(username string, context *gin.Context) error {
-	query := "SELECT * FROM users WHERE username=$1"
-
-	rows, err := database.DB.Query(query, username)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get response from database"})
-		return err
-	}
-
-	if rows.Next() {
-		context.JSON(http.StatusConflict, gin.H{"error": "Status Conflict", "message": "This username already taken"})
-		return errors.New("status conflict")
-	}
-
-	return nil
 }

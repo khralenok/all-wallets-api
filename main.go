@@ -35,5 +35,9 @@ func main() {
 	router.DELETE("/remove-wallet-user/wallet/:wallet_id/username/:username/", utilities.AuthMiddleware(), handlers.DeleteWalletUser)
 	router.DELETE("/delete-wallet/:wallet_id", utilities.AuthMiddleware(), handlers.DeleteWallet)
 
+	//Transactions Management
+	router.POST("/add-income", utilities.AuthMiddleware(), handlers.AddIncome)
+	router.POST("/add-expense", utilities.AuthMiddleware(), handlers.AddExpense)
+
 	router.Run(":8080")
 }
