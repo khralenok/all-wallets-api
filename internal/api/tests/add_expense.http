@@ -1,9 +1,9 @@
 POST http://localhost:8080/add-expense
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA5MDkwMjYsInVzZXJfaWQiOjJ9.Ww2dktEu8WKlxiUGeN8zu0y4w8RVfML_-bSQYx9XDn0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTEwMDA5MDEsInVzZXJfaWQiOjJ9.0Nm1EwJxvW-7IEYgGDMVCISMklExrVObe8csVIakoRA
 Content-Type: application/json
 
 {
-    "amount": 1000,
+    "amount": 2000,
     "category": "Clothes",
     "wallet_id": 1
 }

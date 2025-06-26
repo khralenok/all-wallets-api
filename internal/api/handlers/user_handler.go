@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	utilities "github.com/khralenok/all-wallets-api/internal/api/middleware"
+	"github.com/khralenok/all-wallets-api/internal/api/middleware"
 	"github.com/khralenok/all-wallets-api/internal/database"
 	"github.com/khralenok/all-wallets-api/internal/models"
 	"github.com/khralenok/all-wallets-api/internal/store"
@@ -23,7 +23,7 @@ func CreateUser(context *gin.Context) {
 		return
 	}
 
-	passwordHash, err := utilities.HashPassword(strings.TrimSpace(input.Password))
+	passwordHash, err := middleware.HashPassword(strings.TrimSpace(input.Password))
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Password encryption failed"})
@@ -57,12 +57,12 @@ func LoginUser(context *gin.Context) {
 		return
 	}
 
-	if !utilities.CheckPasswordHash(strings.TrimSpace(input.Password), strings.TrimSpace(user.Password)) {
+	if !middleware.CheckPasswordHash(strings.TrimSpace(input.Password), strings.TrimSpace(user.Password)) {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Status Unauthorized", "message": "Invalid credentials"})
 		return
 	}
 
-	token, err := utilities.GenerateJWT(user.ID)
+	token, err := middleware.GenerateJWT(user.ID)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Token generation failed"})

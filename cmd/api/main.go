@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/khralenok/all-wallets-api/internal/api/handlers"
-	utilities "github.com/khralenok/all-wallets-api/internal/api/middleware"
+	"github.com/khralenok/all-wallets-api/internal/api/middleware"
 	"github.com/khralenok/all-wallets-api/internal/database"
 )
 
@@ -26,18 +26,18 @@ func main() {
 	//User Management
 	router.POST("/signin", handlers.CreateUser)
 	router.POST("/login", handlers.LoginUser)
-	router.GET("/profile", utilities.AuthMiddleware(), handlers.GetProfile)
-	router.PUT("/delete-user", utilities.AuthMiddleware(), handlers.DeleteUser)
+	router.GET("/profile", middleware.AuthMiddleware(), handlers.GetProfile)
+	router.PUT("/delete-user", middleware.AuthMiddleware(), handlers.DeleteUser)
 
 	//Wallets Management
-	router.POST("/new-wallet", utilities.AuthMiddleware(), handlers.CreateWallet)
-	router.POST("/share-wallet", utilities.AuthMiddleware(), handlers.AddWalletUser)
-	router.DELETE("/remove-wallet-user/wallet/:wallet_id/username/:username/", utilities.AuthMiddleware(), handlers.DeleteWalletUser)
-	router.DELETE("/delete-wallet/:wallet_id", utilities.AuthMiddleware(), handlers.DeleteWallet)
+	router.POST("/new-wallet", middleware.AuthMiddleware(), handlers.CreateWallet)
+	router.POST("/share-wallet", middleware.AuthMiddleware(), handlers.AddWalletUser)
+	router.DELETE("/remove-wallet-user/wallet/:wallet_id/username/:username/", middleware.AuthMiddleware(), handlers.DeleteWalletUser)
+	router.DELETE("/delete-wallet/:wallet_id", middleware.AuthMiddleware(), handlers.DeleteWallet)
 
 	//Transactions Management
-	router.POST("/add-income", utilities.AuthMiddleware(), handlers.AddIncome)
-	router.POST("/add-expense", utilities.AuthMiddleware(), handlers.AddExpense)
+	router.POST("/add-income", middleware.AuthMiddleware(), handlers.AddIncome)
+	router.POST("/add-expense", middleware.AuthMiddleware(), handlers.AddExpense)
 
 	router.Run(":8080")
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
+// Add new transaction to DB. Return transaction object
 func AddTransaction(input models.TransactionInput, isDeposit bool, context *gin.Context) (models.Transaction, error) {
 	userID := context.MustGet("userID").(int)
 	var newTransaction models.Transaction
@@ -22,4 +23,36 @@ func AddTransaction(input models.TransactionInput, isDeposit bool, context *gin.
 	}
 
 	return newTransaction, nil
+}
+
+// Return array of all transactions from lastest snapshot
+func GetLatestTransactions(walletID int) ([]models.Transaction, error) {
+	var latestTransactions []models.Transaction
+
+	wallet, err := GetWalletByID(walletID)
+
+	if err != nil {
+		return []models.Transaction{}, err
+	}
+
+	query := "SELECT * FROM transactions WHERE wallet_id = $1 AND created_at > $2"
+
+	rows, err := database.DB.Query(query, wallet.ID, wallet.LastSnapshot)
+
+	if err != nil {
+		return []models.Transaction{}, err
+	}
+
+	for rows.Next() {
+		var nextTransaction models.Transaction
+		err := rows.Scan(&nextTransaction.ID, &nextTransaction.Amount, &nextTransaction.IsDeposit, &nextTransaction.Category, &nextTransaction.WalletID, &nextTransaction.CreatorID, &nextTransaction.CreatedAt)
+
+		if err != nil {
+			return []models.Transaction{}, err
+		}
+
+		latestTransactions = append(latestTransactions, nextTransaction)
+	}
+
+	return latestTransactions, nil
 }
