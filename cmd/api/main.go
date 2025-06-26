@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/khralenok/all-wallets-api/database"
-	"github.com/khralenok/all-wallets-api/handlers"
-	"github.com/khralenok/all-wallets-api/utilities"
+	"github.com/khralenok/all-wallets-api/internal/api/handlers"
+	utilities "github.com/khralenok/all-wallets-api/internal/api/middleware"
+	"github.com/khralenok/all-wallets-api/internal/database"
 )
 
 func main() {

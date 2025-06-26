@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/database"
-	"github.com/khralenok/all-wallets-api/models"
-	"github.com/khralenok/all-wallets-api/store"
+	"github.com/khralenok/all-wallets-api/internal/database"
+	"github.com/khralenok/all-wallets-api/internal/models"
+	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 // Create new wallet with provided name and currency and automatically create new wallet user with admin role based on user who call the function.

@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/database"
-	"github.com/khralenok/all-wallets-api/models"
+	"github.com/khralenok/all-wallets-api/internal/database"
+	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
 func AddTransaction(input models.TransactionInput, isDeposit bool, context *gin.Context) (models.Transaction, error) {

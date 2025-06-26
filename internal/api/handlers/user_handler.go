@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/database"
-	"github.com/khralenok/all-wallets-api/models"
-	"github.com/khralenok/all-wallets-api/store"
-	"github.com/khralenok/all-wallets-api/utilities"
+	utilities "github.com/khralenok/all-wallets-api/internal/api/middleware"
+	"github.com/khralenok/all-wallets-api/internal/database"
+	"github.com/khralenok/all-wallets-api/internal/models"
+	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 // Add new user in database or give http error in response. As input require json with username, password and base currency in JSON format

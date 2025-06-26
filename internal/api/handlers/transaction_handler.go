@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/models"
-	"github.com/khralenok/all-wallets-api/store"
+	"github.com/khralenok/all-wallets-api/internal/models"
+	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 func AddIncome(context *gin.Context) {

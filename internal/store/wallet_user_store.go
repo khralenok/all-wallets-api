@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/database"
-	"github.com/khralenok/all-wallets-api/models"
+	"github.com/khralenok/all-wallets-api/internal/database"
+	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
 // Check if there in no user with such user id in specific wallet users list. Return true if there is no user with such id.
