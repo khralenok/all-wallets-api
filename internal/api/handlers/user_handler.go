@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/internal/api/middleware"
-	"github.com/khralenok/all-wallets-api/internal/database"
 	"github.com/khralenok/all-wallets-api/internal/models"
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
@@ -30,12 +29,9 @@ func CreateUser(context *gin.Context) {
 		return
 	}
 
-	query := "INSERT INTO users (username, user_pwd, base_currency) VALUES ($1, $2, $3)"
-
-	_, err = database.DB.Exec(query, input.Username, passwordHash, input.BaseCurrency)
+	err = store.AddNewUser(input.Username, passwordHash, input.BaseCurrency, context)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert user"})
 		return
 	}
 
@@ -97,25 +93,15 @@ func GetProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"user": userOutput, "wallets": userWallets})
 }
 
-// Mark the user as deleted and remove them from all wallets they participated in. Can be performed only by user themself.
+// Mark the user as deleted and remove them from all wallets they participated in. Can be called only by user themself.
 func DeleteUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	query := "DELETE FROM wallet_users WHERE user_id=$1"
-
-	_, err := database.DB.Exec(query, userID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't remove this user from wallet users list"})
+	if store.DeleteUserFromAllWallets(userID, context) != nil {
 		return
 	}
 
-	query = "UPDATE users SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id=$1"
-
-	_, err = database.DB.Exec(query, userID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't update user data"})
+	if store.MarkUserAsDeleted(userID, context) != nil {
 		return
 	}
 

@@ -58,3 +58,33 @@ func CheckUserPermissions(userID, walletID int, context *gin.Context) bool {
 
 	return true
 }
+
+// Delete wallet user
+func DeleteWalletUser(walletID, userToDeleteId int, context *gin.Context) error {
+	query := "DELETE FROM wallet_users WHERE user_id=$1 AND wallet_id=$2"
+
+	_, err := database.DB.Exec(query, userToDeleteId, walletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't delete this user"})
+		return err
+	}
+
+	context.JSON(http.StatusNoContent, gin.H{"status": "No content", "message": "Wallet User was successfully deleted"})
+	return nil
+}
+
+// Delete user from all wallets
+
+func DeleteUserFromAllWallets(userID int, context *gin.Context) error {
+	query := "DELETE FROM wallet_users WHERE user_id=$1"
+
+	_, err := database.DB.Exec(query, userID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't remove this user from wallet users list"})
+		return err
+	}
+
+	return nil
+}

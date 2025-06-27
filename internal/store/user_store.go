@@ -10,6 +10,20 @@ import (
 	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
+// Create new user
+func AddNewUser(username, passwordHash, baseCurrency string, context *gin.Context) error {
+	query := "INSERT INTO users (username, user_pwd, base_currency) VALUES ($1, $2, $3)"
+
+	_, err := database.DB.Exec(query, username, passwordHash, baseCurrency)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert user"})
+		return err
+	}
+
+	return nil
+}
+
 // Return user object or error if there is no user with such id in database
 func GetUserById(userID int, context *gin.Context) (models.User, error) {
 	var user models.User
@@ -109,6 +123,19 @@ func CheckIfUsernameUnique(username string, context *gin.Context) error {
 	if rows.Next() {
 		context.JSON(http.StatusConflict, gin.H{"error": "Status Conflict", "message": "This username already taken"})
 		return errors.New("status conflict")
+	}
+
+	return nil
+}
+
+func MarkUserAsDeleted(userID int, context *gin.Context) error {
+	query := "UPDATE users SET is_deleted = TRUE, deleted_at = CURRENT_TIMESTAMP WHERE id=$1"
+
+	_, err := database.DB.Exec(query, userID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't update user data"})
+		return err
 	}
 
 	return nil

@@ -10,6 +10,7 @@ import (
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
+// Add income transaction of specified amount and category to provided wallet
 func AddIncome(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
@@ -28,6 +29,7 @@ func AddIncome(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"new_transaction": newTransaction})
 }
 
+// Add expense transaction of specified amount and category to provided wallet
 func AddExpense(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
