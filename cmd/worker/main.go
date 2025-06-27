@@ -36,7 +36,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		sumOfLatestTransactions := logic.CalcSnapshot(latestTransactions)
+		sumOfLatestTransactions := logic.CalcSumOfTransactions(latestTransactions)
 
 		err = store.UpdateBalance(*snapshotWalletID, sumOfLatestTransactions)
 

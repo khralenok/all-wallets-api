@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/khralenok/all-wallets-api/internal/logic"
 	"github.com/khralenok/all-wallets-api/internal/models"
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
@@ -36,17 +37,28 @@ func AddExpense(context *gin.Context) {
 		return
 	}
 
+	isAllowed, err := logic.CheckIfBalanceIsEnough(input.WalletID, input.Amount)
+
+	if !isAllowed {
+		if err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't approve wallet have enough funds to write expense"})
+			return
+		}
+
+		context.JSON(http.StatusConflict, gin.H{"error": "Conflict", "message": "Insufficient funds. You cannot spend more than your current wallet balance."})
+		return
+	}
+
 	newTransaction, err := store.AddTransaction(input, false, context)
 
 	if err != nil {
 		return
 	}
 
-	// TO DO: Check if wallet have enough funds
-
 	context.JSON(http.StatusCreated, gin.H{"new_transaction": newTransaction})
 }
 
+// Group checkups that are common for adding expense and income based on user input
 func validateTransactionInput(userID int, context *gin.Context) (models.TransactionInput, error) {
 
 	var input models.TransactionInput
