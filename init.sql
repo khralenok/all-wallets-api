@@ -34,6 +34,22 @@ CREATE TABLE transactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE currency_metadata (
+  code TEXT PRIMARY KEY,
+  name TEXT,
+  type TEXT CHECK (type IN ('fiat', 'crypto')),
+  decimal_places INT,
+  symbol TEXT
+);
+
+CREATE TABLE exchange_rates (
+  from_currency TEXT,
+  to_currency TEXT,
+  rate NUMERIC(18, 8),
+  fetched_at TIMESTAMP,
+  PRIMARY KEY (from_currency, to_currency)
+);
+
 CREATE TABLE recurrent_payments (
   id SERIAL PRIMARY KEY,
   amount INT NOT NULL,

@@ -48,6 +48,31 @@ func main() {
 		fmt.Println("balance was successfuly updated")
 		os.Exit(0)
 
+	case "xrates":
+		rates, err := logic.FetchExchangeRates()
+
+		if err != nil {
+			fmt.Println("Error: ", err.Error())
+			os.Exit(1)
+		}
+
+		for key, value := range rates {
+			fmt.Printf("%s: %.2f\n", key, value)
+		}
+
+		availableCurrencies, err := store.GetAvailableCurrencies()
+
+		if err != nil {
+			fmt.Println("Error: ", err.Error())
+			os.Exit(1)
+		}
+
+		for _, value := range availableCurrencies {
+			fmt.Println(value.Code)
+		}
+
+		os.Exit(0)
+
 	default:
 		fmt.Println("expected some command")
 		os.Exit(1)
