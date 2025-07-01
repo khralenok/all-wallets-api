@@ -7,9 +7,8 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/khralenok/all-wallets-api/internal/commands"
 	"github.com/khralenok/all-wallets-api/internal/database"
-	"github.com/khralenok/all-wallets-api/internal/logic"
-	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 func main() {
@@ -28,49 +27,25 @@ func main() {
 
 	switch os.Args[1] {
 	case "snapshot":
-		snapshotCmd.Parse(os.Args[2:])
-		latestTransactions, err := store.GetLatestTransactions(*snapshotWalletID)
+		err := commands.UpdateWalletSnapshot(snapshotCmd, snapshotWalletID)
 
 		if err != nil {
-			fmt.Println(err, latestTransactions)
+			fmt.Println("Error: ", err.Error())
 			os.Exit(1)
 		}
 
-		sumOfLatestTransactions := logic.CalcSumOfTransactions(latestTransactions)
-
-		err = store.UpdateBalance(*snapshotWalletID, sumOfLatestTransactions)
-
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		fmt.Println("balance was successfuly updated")
+		fmt.Println("Balance was successfuly updated!")
 		os.Exit(0)
 
 	case "xrates":
-		rates, err := logic.FetchExchangeRates()
+		err := commands.UpdateExchangeRates()
 
 		if err != nil {
 			fmt.Println("Error: ", err.Error())
 			os.Exit(1)
 		}
 
-		for key, value := range rates {
-			fmt.Printf("%s: %.2f\n", key, value)
-		}
-
-		availableCurrencies, err := store.GetAvailableCurrencies()
-
-		if err != nil {
-			fmt.Println("Error: ", err.Error())
-			os.Exit(1)
-		}
-
-		for _, value := range availableCurrencies {
-			fmt.Println(value.Code)
-		}
-
+		fmt.Println("Exchange rates were successfuly updated!")
 		os.Exit(0)
 
 	default:

@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-// STEP 1. FETCH LATEST USD to X exchange rates from https://openexchangerates.org/api/latest.json?app_id=OXR_APP_ID(env)
+// STEP 1. FETCH LATEST USD to X exchange rates from
 
 // Call OpenExchangeRates API to get exchange rates for USD. Return map with currencies and corresponding rates.
 func FetchExchangeRates() (map[string]float64, error) {
@@ -67,13 +67,3 @@ func getDataFromAPI(url string) (map[string]any, error) {
 
 	return data, nil
 }
-
-// STEP 2. Sign USD to X rates to DB
-
-// STEP 3. Calculate X to USD exchange rates
-
-// STEP 4. Sign X to USD rates to DB
-
-// STEP 5. Calculate X to Y exchanhe rates (via USD)
-
-// STEP 6. Sign X to Y rates to DB
