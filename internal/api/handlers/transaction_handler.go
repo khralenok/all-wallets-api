@@ -20,7 +20,16 @@ func AddIncome(context *gin.Context) {
 		return
 	}
 
-	newTransaction, err := store.AddTransaction(input, true, context)
+	decimalPlaces, err := store.GetWalletDecimalPlaces(input.WalletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to get decimal places"})
+		return
+	}
+
+	formatedAmount := logic.FormatInputValue(input.Amount, decimalPlaces)
+
+	newTransaction, err := store.AddTransaction(formatedAmount, input.WalletID, true, input.Category, context)
 
 	if err != nil {
 		return
@@ -39,7 +48,15 @@ func AddExpense(context *gin.Context) {
 		return
 	}
 
-	isAllowed, err := logic.CheckIfBalanceIsEnough(input.WalletID, input.Amount)
+	decimalPlaces, err := store.GetWalletDecimalPlaces(input.WalletID)
+
+	if err != nil {
+		return
+	}
+
+	formatedAmount := logic.FormatInputValue(input.Amount, decimalPlaces)
+
+	isAllowed, err := logic.CheckIfBalanceIsEnough(input.WalletID, formatedAmount)
 
 	if !isAllowed {
 		if err != nil {
@@ -51,7 +68,7 @@ func AddExpense(context *gin.Context) {
 		return
 	}
 
-	newTransaction, err := store.AddTransaction(input, false, context)
+	newTransaction, err := store.AddTransaction(formatedAmount, input.WalletID, true, input.Category, context)
 
 	if err != nil {
 		return

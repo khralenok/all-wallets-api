@@ -9,13 +9,13 @@ import (
 )
 
 // Add new transaction to DB. Return transaction object
-func AddTransaction(input models.TransactionInput, isDeposit bool, context *gin.Context) (models.Transaction, error) {
+func AddTransaction(amount, walletID int, isDeposit bool, category string, context *gin.Context) (models.Transaction, error) {
 	userID := context.MustGet("userID").(int)
 	var newTransaction models.Transaction
 
 	query := "INSERT INTO transactions (amount, is_deposit, category, wallet_id, creator_id) VALUES ($1, $2, $3, $4, $5) RETURNING *"
 
-	err := database.DB.QueryRow(query, input.Amount, isDeposit, input.Category, input.WalletID, userID).Scan(&newTransaction.ID, &newTransaction.Amount, &newTransaction.IsDeposit, &newTransaction.Category, &newTransaction.WalletID, &newTransaction.CreatorID, &newTransaction.CreatedAt)
+	err := database.DB.QueryRow(query, amount, isDeposit, category, walletID, userID).Scan(&newTransaction.ID, &newTransaction.Amount, &newTransaction.IsDeposit, &newTransaction.Category, &newTransaction.WalletID, &newTransaction.CreatorID, &newTransaction.CreatedAt)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to insert new transaction data into the database"})
@@ -42,6 +42,8 @@ func GetLatestTransactions(walletID int) ([]models.Transaction, error) {
 	if err != nil {
 		return []models.Transaction{}, err
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var nextTransaction models.Transaction

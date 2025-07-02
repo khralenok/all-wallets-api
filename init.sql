@@ -1,3 +1,11 @@
+CREATE TABLE currency_metadata (
+  code TEXT PRIMARY KEY,
+  name TEXT,
+  type TEXT CHECK (type IN ('fiat', 'crypto')),
+  decimal_places INT,
+  symbol TEXT
+);
+
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
@@ -34,13 +42,6 @@ CREATE TABLE transactions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE currency_metadata (
-  code TEXT PRIMARY KEY,
-  name TEXT,
-  type TEXT CHECK (type IN ('fiat', 'crypto')),
-  decimal_places INT,
-  symbol TEXT
-);
 
 CREATE TABLE exchange_rates (
   from_currency TEXT,
@@ -67,3 +68,10 @@ CREATE TABLE recurrent_payments (
 );
 
 CREATE INDEX idx_next_recurrent_payments ON recurrent_payments(next_run);
+
+INSERT INTO currency_metadata (code, name, type, decimal_places, symbol) VALUES
+('USD', 'US Dollar', 'fiat', 2, '$'),
+('KZT', 'Kazakhstani Tenge', 'fiat', 0, '₸'),
+('VND', 'Vietnamese Dong', 'fiat', 0, '₫'),
+('RUB', 'Russian Ruble', 'fiat', 2, '₽'),
+('BTC', 'Bitcoin', 'crypto', 8, '₿');

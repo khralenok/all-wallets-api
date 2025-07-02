@@ -13,7 +13,7 @@ type Transaction struct {
 }
 
 type TransactionInput struct {
-	Amount   int    `json:"amount"`
-	Category string `json:"category"`
-	WalletID int    `json:"wallet_id"`
+	Amount   float64 `json:"amount"`
+	Category string  `json:"category"`
+	WalletID int     `json:"wallet_id"`
 }

@@ -1,8 +1,8 @@
 POST http://localhost:8080/add-income
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTEwODAwMzIsInVzZXJfaWQiOjJ9.bQVdfjQCisRnfMGdpLLXkFLHyOIUARogT8olhV_Cn74
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTE1MTg4ODgsInVzZXJfaWQiOjF9.l0ebwe830xEKsFLIj1AP_WhK-ChnxtAJDNc3VwiQ450
 
 {
-    "amount": 100000,
+    "amount": 25000.00,
     "category": "Salary",
     "wallet_id": 1
 }

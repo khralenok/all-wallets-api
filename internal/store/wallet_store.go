@@ -12,11 +12,11 @@ import (
 
 // Return true if there is wallet with such id in database
 func IsWalletExist(id int, context *gin.Context) bool {
-	var wallet models.Wallet
+	var walletID int
 
 	query := "SELECT 1 FROM wallets WHERE id = $1"
 
-	err := database.DB.QueryRow(query, id).Scan(&wallet.ID, &wallet.WalletName, &wallet.Currency, &wallet.Balance, &wallet.LastSnapshot, &wallet.CreatedAt)
+	err := database.DB.QueryRow(query, id).Scan(&walletID)
 
 	if err == sql.ErrNoRows {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "There is no such wallet"})
@@ -39,6 +39,21 @@ func GetWalletByID(walletID int) (models.Wallet, error) {
 	}
 
 	return wallet, nil
+}
+
+func GetWalletDecimalPlaces(walletID int) (int, error) {
+	var walletCurrency string
+	var decimalPlaces int
+
+	query := "SELECT cm.code, cm.decimal_places FROM wallets w JOIN currency_metadata cm ON cm.code = w.currency WHERE w.id = $1"
+
+	err := database.DB.QueryRow(query, walletID).Scan(&walletCurrency, &decimalPlaces)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return decimalPlaces, nil
 }
 
 // Update balance for specified sum.

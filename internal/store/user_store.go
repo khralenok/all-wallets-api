@@ -94,6 +94,8 @@ func GetUserWallets(userID int, context *gin.Context) ([]models.WalletOutputSimp
 		return userWallets, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var nextWallet models.WalletOutputSimple
 		err := rows.Scan(&nextWallet.WalletID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.UserRole)
@@ -119,6 +121,8 @@ func CheckIfUsernameUnique(username string, context *gin.Context) error {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get response from database"})
 		return err
 	}
+
+	defer rows.Close()
 
 	if rows.Next() {
 		context.JSON(http.StatusConflict, gin.H{"error": "Status Conflict", "message": "This username already taken"})

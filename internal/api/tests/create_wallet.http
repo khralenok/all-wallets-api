@@ -1,8 +1,8 @@
 POST http://localhost:8080/new-wallet
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4MjQyNTcsInVzZXJfaWQiOjJ9._DxDDSh0asI2iTs4yXyMm6KsZY6HLglcrlhvWNRVNeg
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTE1MTU3MzQsInVzZXJfaWQiOjF9.pA9x1A0W7tNxeLbY7e1tq-bHx0rWennoicwFd0uXkts
 Content-Type: application/json
 
 {
-    "wallet_name": "test_wallet_2",
-    "currency": "USD"
+    "wallet_name": "test_wallet",
+    "currency": "RUB"
 }

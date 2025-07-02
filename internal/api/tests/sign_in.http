@@ -2,7 +2,7 @@ POST http://localhost:8080/signin
 Content-Type: application/json
 
 {
-    "username": "test_user_4",
+    "username": "test_user",
     "user_pwd": "123",
     "base_currency": "USD"
 }
