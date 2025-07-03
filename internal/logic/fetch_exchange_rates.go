@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-// STEP 1. FETCH LATEST USD to X exchange rates from
-
 // Call OpenExchangeRates API to get exchange rates for USD. Return map with currencies and corresponding rates.
 func FetchExchangeRates() (map[string]float64, error) {
 	rates := make(map[string]float64)
