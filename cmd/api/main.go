@@ -30,14 +30,17 @@ func main() {
 	router.PUT("/delete-user", middleware.AuthMiddleware(), handlers.DeleteUser)
 
 	//Wallets Management
+	router.GET("/wallet/:id", middleware.AuthMiddleware(), handlers.GetWallet)
 	router.POST("/new-wallet", middleware.AuthMiddleware(), handlers.CreateWallet)
-	router.POST("/share-wallet", middleware.AuthMiddleware(), handlers.AddWalletUser)
-	router.DELETE("/remove-wallet-user/wallet/:wallet_id/username/:username/", middleware.AuthMiddleware(), handlers.DeleteWalletUser)
 	router.DELETE("/delete-wallet/:wallet_id", middleware.AuthMiddleware(), handlers.DeleteWallet)
 
+	//Wallet Users Management
+	router.POST("/share-wallet", middleware.AuthMiddleware(), handlers.CreateWalletUser)
+	router.DELETE("/remove-wallet-user/wallet/:wallet_id/username/:username/", middleware.AuthMiddleware(), handlers.DeleteWalletUser)
+
 	//Transactions Management
-	router.POST("/add-income", middleware.AuthMiddleware(), handlers.AddIncome)
-	router.POST("/add-expense", middleware.AuthMiddleware(), handlers.AddExpense)
+	router.POST("/add-income", middleware.AuthMiddleware(), func(context *gin.Context) { handlers.CreateTransaction(context, true) })
+	router.POST("/add-expense", middleware.AuthMiddleware(), func(context *gin.Context) { handlers.CreateTransaction(context, false) })
 
 	router.Run(":8080")
 }

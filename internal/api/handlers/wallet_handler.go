@@ -5,50 +5,78 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/internal/database"
+	"github.com/khralenok/all-wallets-api/internal/logic"
 	"github.com/khralenok/all-wallets-api/internal/models"
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 // Create new wallet with provided name and currency and automatically create new wallet user with admin role based on user who call the function.
 func CreateWallet(context *gin.Context) {
-	userID := context.MustGet("userID").(int)
+	_ = context.MustGet("userID").(int)
 
-	var request models.NewWalletRequest
-	var newWallet models.Wallet
-	var newWalletUser models.WalletUser
+	var input models.NewWalletRequest
+	var newWalletUserRequest models.NewWalletUserRequest
 
-	if err := context.BindJSON(&request); err != nil {
+	if err := context.BindJSON(&input); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	query := "INSERT INTO wallets (wallet_name, currency) VALUES ($1, $2) RETURNING id, balance, last_snapshot, created_at"
-
-	err := database.DB.QueryRow(query, request.WalletName, request.Currency).Scan(&newWallet.ID, &newWallet.Balance, &newWallet.LastSnapshot, &newWallet.CreatedAt)
+	newWallet, err := store.AddNewWallet(input, context)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet data into the database"})
 		return
 	}
 
-	newWallet.WalletName = request.WalletName
-	newWallet.Currency = request.Currency
+	newWalletUserRequest.WalletID = newWallet.ID
+	newWalletUserRequest.UserRole = "admin"
 
-	newWalletUser.UserID = userID
-	newWalletUser.WalletID = newWallet.ID
-	newWalletUser.UserRole = "admin"
-
-	query = "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING created_at"
-
-	err = database.DB.QueryRow(query, newWalletUser.WalletID, newWalletUser.UserID, newWalletUser.UserRole).Scan(&newWalletUser.CreatedAt)
+	newWalletUser, err := store.AddWalletUser(newWalletUserRequest, context)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
 		return
 	}
 
 	context.JSON(http.StatusCreated, gin.H{"new_wallet": newWallet, "new_wallet_user": newWalletUser})
+}
+
+// Response with wallet data
+func GetWallet(context *gin.Context) {
+	_ = context.MustGet("userID").(int)
+	walletID, err := strconv.Atoi(context.Param("id"))
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Id parameter should be integer"})
+		return
+	}
+
+	// TO DO: Check if user have rights to see the wallet
+
+	wallet, err := store.GetWalletByID(walletID)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Can't find such wallet"})
+		return
+	}
+
+	latestTransactions, err := store.GetLatestTransactions(walletID)
+
+	if err != nil {
+		return
+	}
+
+	decimalPlaces, err := store.GetWalletDecimalPlaces(walletID)
+
+	if err != nil {
+		return
+	}
+
+	balance := wallet.Balance + logic.CalcSumOfTransactions(latestTransactions)
+
+	outputBalance := logic.FormatOutputValue(balance, decimalPlaces)
+
+	// TO DO: Replace with correct output format
+	context.JSON(http.StatusOK, gin.H{"id": wallet.ID, "balance": outputBalance, "currency": wallet.Currency})
 }
 
 // Delete the wallet and all it's users. Can be performed only by wallet user with admin role
@@ -65,21 +93,11 @@ func DeleteWallet(context *gin.Context) {
 		return
 	}
 
-	query := "DELETE FROM wallet_users WHERE wallet_id=$1"
-
-	_, err = database.DB.Exec(query, walletID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this wallet users"})
+	if err := store.RemoveWalletUser(walletID, userID, context); err != nil {
 		return
 	}
 
-	query = "DELETE FROM wallets WHERE id=$1"
-
-	_, err = database.DB.Exec(query, walletID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this wallet"})
+	if err := store.RemoveWallet(walletID, context); err != nil {
 		return
 	}
 

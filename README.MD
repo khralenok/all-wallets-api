@@ -5,8 +5,10 @@ With AllWallets API users might create and share wallets and track their finance
 ## API features
 
 - Create user
+- Get user data
 - Delete user
 - Create wallet
+- Get wallet data
 - Delete wallet
 - Share wallet with another user
 - Unshare it back
@@ -14,12 +16,12 @@ With AllWallets API users might create and share wallets and track their finance
 - Add new expense transaction
 
 ## Worker features
+
 - Making snapshot of wallet balance
 - Updating exchange rates
 
 ## Upcoming updates
-- Support of various currencies for wallets
-- Calculating of all user wallets balances in their base currency
+- Add ability to see overall user balance in their base currency
 
 ## Join my Telegram and Threads for Updates
 

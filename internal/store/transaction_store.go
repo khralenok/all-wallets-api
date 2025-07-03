@@ -2,6 +2,7 @@ package store
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/internal/database"
@@ -13,9 +14,9 @@ func AddTransaction(amount, walletID int, isDeposit bool, category string, conte
 	userID := context.MustGet("userID").(int)
 	var newTransaction models.Transaction
 
-	query := "INSERT INTO transactions (amount, is_deposit, category, wallet_id, creator_id) VALUES ($1, $2, $3, $4, $5) RETURNING *"
+	query := "INSERT INTO transactions (amount, is_deposit, category, wallet_id, creator_id, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *"
 
-	err := database.DB.QueryRow(query, amount, isDeposit, category, walletID, userID).Scan(&newTransaction.ID, &newTransaction.Amount, &newTransaction.IsDeposit, &newTransaction.Category, &newTransaction.WalletID, &newTransaction.CreatorID, &newTransaction.CreatedAt)
+	err := database.DB.QueryRow(query, amount, isDeposit, category, walletID, userID, time.Now()).Scan(&newTransaction.ID, &newTransaction.Amount, &newTransaction.IsDeposit, &newTransaction.Category, &newTransaction.WalletID, &newTransaction.CreatorID, &newTransaction.CreatedAt)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to insert new transaction data into the database"})

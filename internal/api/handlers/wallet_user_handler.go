@@ -5,41 +5,44 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/khralenok/all-wallets-api/internal/database"
 	"github.com/khralenok/all-wallets-api/internal/models"
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
 // Create new wallet user with provided role, based on target wallet id and username of user who need to be added. Can be permormed only by wallet admin.
-func AddWalletUser(context *gin.Context) {
+func CreateWalletUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	var request models.NewWalletUserRequest
+	var input models.NewWalletUserRequest
 
-	if err := context.BindJSON(&request); err != nil {
+	if err := context.BindJSON(&input); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
 		return
 	}
 
-	if !store.CheckUserPermissions(userID, request.WalletID, context) {
+	if !store.CheckUserPermissions(userID, input.WalletID, context) {
 		return
 	}
 
-	newUserId := store.GetIdByUsername(request.Username, context)
+	newUserId := store.GetIdByUsername(input.Username, context)
 
 	if newUserId == -1 {
 		return
 	}
 
-	if !store.CheckWalletUserUnique(newUserId, request.WalletID, context) {
+	if !store.CheckWalletUserUnique(newUserId, input.WalletID, context) {
 		return
 	}
 
-	if !validateRoleInput(request.UserRole, context) {
+	if !validateRoleInput(input.UserRole, context) {
 		return
 	}
 
-	newWalletUser := store.CreateWalletUser(request.WalletID, newUserId, request.UserRole, context)
+	newWalletUser, err := store.AddWalletUser(input, context)
+
+	if err != nil {
+		return
+	}
 
 	context.JSON(http.StatusCreated, gin.H{"new_wallet_user": newWalletUser})
 }
@@ -71,12 +74,8 @@ func DeleteWalletUser(context *gin.Context) {
 		return
 	}
 
-	query := "DELETE FROM wallet_users WHERE user_id=$1 AND wallet_id=$2"
-
-	_, err = database.DB.Exec(query, userToDeleteID, walletID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Can't delete this user"})
+	if err := store.RemoveWalletUser(walletID, userToDeleteID, context); err != nil {
+		return
 	}
 
 	context.JSON(http.StatusNoContent, gin.H{"status": "No content", "message": "Wallet User was successfully deleted"})

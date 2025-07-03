@@ -20,6 +20,6 @@ type WalletOutputSimple struct {
 	WalletID   int    `json:"wallet_id"`
 	WalletName string `json:"wallet_name"`
 	Currency   string `json:"currency"`
-	Balance    int    `json:"balance"`
+	Balance    string `json:"balance"`
 	UserRole   string `json:"user_role"`
 }

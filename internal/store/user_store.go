@@ -81,36 +81,6 @@ func GetIdByUsername(username string, context *gin.Context) int {
 	return userToAdd.ID
 }
 
-// Return array of simplified wallet structs or an error.
-func GetUserWallets(userID int, context *gin.Context) ([]models.WalletOutputSimple, error) {
-	var userWallets []models.WalletOutputSimple
-
-	query := "SELECT w.id AS wallet_id, w.wallet_name, w.currency, w.balance, wu.user_role FROM wallets w JOIN wallet_users wu ON wu.wallet_id = w.id WHERE wu.user_id = $1"
-
-	rows, err := database.DB.Query(query, userID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get wallets list from database"})
-		return userWallets, err
-	}
-
-	defer rows.Close()
-
-	for rows.Next() {
-		var nextWallet models.WalletOutputSimple
-		err := rows.Scan(&nextWallet.WalletID, &nextWallet.WalletName, &nextWallet.Currency, &nextWallet.Balance, &nextWallet.UserRole)
-
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't read next row in the wallets list"})
-			return userWallets, err
-		}
-
-		userWallets = append(userWallets, nextWallet)
-	}
-
-	return userWallets, nil
-}
-
 // Return nil if there is no users with such username in database.
 func CheckIfUsernameUnique(username string, context *gin.Context) error {
 	query := "SELECT * FROM users WHERE username=$1"

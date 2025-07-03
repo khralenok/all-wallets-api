@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/internal/database"
 	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
 func AddUpdatedExchangeRates(exchangeRates []models.ExchangeRate) error {
-	if err := deletePreviousRates(); err != nil {
+	if err := removePreviousRates(); err != nil {
 		return err
 	}
 
@@ -36,7 +37,23 @@ func AddUpdatedExchangeRates(exchangeRates []models.ExchangeRate) error {
 	return nil
 }
 
-func deletePreviousRates() error {
+// Return rate for specified currencies pair
+func GetRate(from, to string, context *gin.Context) (float64, error) {
+	var rate float64
+
+	query := "SELECT rate FROM exchange_rates WHERE from_currency = $1 AND to_currency = $2"
+
+	err := database.DB.QueryRow(query, from, to).Scan(&rate)
+
+	if err != nil {
+		return 0.0, err
+	}
+
+	return rate, nil
+}
+
+// Clean up exchange_rates table before it's update
+func removePreviousRates() error {
 	query := "DELETE FROM exchange_rates"
 
 	_, err := database.DB.Exec(query)

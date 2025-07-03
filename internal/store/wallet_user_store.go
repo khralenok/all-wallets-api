@@ -9,6 +9,24 @@ import (
 	"github.com/khralenok/all-wallets-api/internal/models"
 )
 
+// Insert new wallet user to database. Return new wallet user sruct.
+func AddWalletUser(input models.NewWalletUserRequest, context *gin.Context) (models.WalletUser, error) {
+	rawUserID, _ := context.Get("userID")
+	userID := rawUserID.(int)
+
+	var newWalletUser models.WalletUser
+
+	query := "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING *"
+	err := database.DB.QueryRow(query, input.WalletID, userID, input.UserRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
+		return models.WalletUser{}, err
+	}
+
+	return newWalletUser, nil
+}
+
 // Check if there in no user with such user id in specific wallet users list. Return true if there is no user with such id.
 func CheckWalletUserUnique(userID, walletID int, context *gin.Context) bool {
 	var existingUser models.WalletUser
@@ -22,20 +40,6 @@ func CheckWalletUserUnique(userID, walletID int, context *gin.Context) bool {
 	}
 
 	return true
-}
-
-// Insert new wallet user to database. Return new wallet user sruct.
-func CreateWalletUser(walletID, userID int, userRole string, context *gin.Context) models.WalletUser {
-	var newWalletUser models.WalletUser
-	query := "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING wallet_id, user_id, user_role, created_at"
-	err := database.DB.QueryRow(query, walletID, userID, userRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
-		return models.WalletUser{}
-	}
-
-	return newWalletUser
 }
 
 // Return true if user have admin role for wallet with provided ID.
@@ -59,8 +63,8 @@ func CheckUserPermissions(userID, walletID int, context *gin.Context) bool {
 	return true
 }
 
-// Delete wallet user
-func DeleteWalletUser(walletID, userToDeleteId int, context *gin.Context) error {
+// Remove the row with such user_id and wallet_id from wallet_users table
+func RemoveWalletUser(walletID, userToDeleteId int, context *gin.Context) error {
 	query := "DELETE FROM wallet_users WHERE user_id=$1 AND wallet_id=$2"
 
 	_, err := database.DB.Exec(query, userToDeleteId, walletID)
@@ -74,9 +78,8 @@ func DeleteWalletUser(walletID, userToDeleteId int, context *gin.Context) error 
 	return nil
 }
 
-// Delete user from all wallets
-
-func DeleteUserFromAllWallets(userID int, context *gin.Context) error {
+// Remove all rows with this user from wallet_users table
+func RemoveUserFromAllWallets(userID int, context *gin.Context) error {
 	query := "DELETE FROM wallet_users WHERE user_id=$1"
 
 	_, err := database.DB.Exec(query, userID)

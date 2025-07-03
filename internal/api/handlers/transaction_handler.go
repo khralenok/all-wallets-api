@@ -10,36 +10,8 @@ import (
 	"github.com/khralenok/all-wallets-api/internal/store"
 )
 
-// Add income transaction of specified amount and category to provided wallet
-func AddIncome(context *gin.Context) {
-	userID := context.MustGet("userID").(int)
-
-	input, err := validateTransactionInput(userID, context)
-
-	if err != nil {
-		return
-	}
-
-	decimalPlaces, err := store.GetWalletDecimalPlaces(input.WalletID)
-
-	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "raw_error": err.Error(), "message": "Failed to get decimal places"})
-		return
-	}
-
-	formatedAmount := logic.FormatInputValue(input.Amount, decimalPlaces)
-
-	newTransaction, err := store.AddTransaction(formatedAmount, input.WalletID, true, input.Category, context)
-
-	if err != nil {
-		return
-	}
-
-	context.JSON(http.StatusCreated, gin.H{"new_transaction": newTransaction})
-}
-
-// Add expense transaction of specified amount and category to provided wallet
-func AddExpense(context *gin.Context) {
+// Create new transaction
+func CreateTransaction(context *gin.Context, isDeposit bool) {
 	userID := context.MustGet("userID").(int)
 
 	input, err := validateTransactionInput(userID, context)
@@ -56,19 +28,19 @@ func AddExpense(context *gin.Context) {
 
 	formatedAmount := logic.FormatInputValue(input.Amount, decimalPlaces)
 
-	isAllowed, err := logic.CheckIfBalanceIsEnough(input.WalletID, formatedAmount)
+	if !isDeposit {
+		if isAllowed, err := store.CheckIfBalanceIsEnough(input.WalletID, formatedAmount); !isAllowed {
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't approve wallet have enough funds to write expense"})
+				return
+			}
 
-	if !isAllowed {
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't approve wallet have enough funds to write expense"})
+			context.JSON(http.StatusConflict, gin.H{"error": "Conflict", "message": "Insufficient funds. You cannot spend more than your current wallet balance."})
 			return
 		}
-
-		context.JSON(http.StatusConflict, gin.H{"error": "Conflict", "message": "Insufficient funds. You cannot spend more than your current wallet balance."})
-		return
 	}
 
-	newTransaction, err := store.AddTransaction(formatedAmount, input.WalletID, true, input.Category, context)
+	newTransaction, err := store.AddTransaction(formatedAmount, input.WalletID, isDeposit, input.Category, context)
 
 	if err != nil {
 		return

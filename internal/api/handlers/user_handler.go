@@ -84,7 +84,7 @@ func GetProfile(context *gin.Context) {
 	userOutput.Username = user.Username
 	userOutput.BaseCurrency = user.BaseCurrency
 
-	userWallets, err := store.GetUserWallets(userID, context)
+	userWallets, err := store.GetWalletsByUser(userID, context)
 
 	if err != nil {
 		return
@@ -97,7 +97,7 @@ func GetProfile(context *gin.Context) {
 func DeleteUser(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
 
-	if store.DeleteUserFromAllWallets(userID, context) != nil {
+	if store.RemoveUserFromAllWallets(userID, context) != nil {
 		return
 	}
 
