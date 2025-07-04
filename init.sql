@@ -46,7 +46,7 @@ CREATE TABLE transactions (
 CREATE TABLE exchange_rates (
   from_currency TEXT,
   to_currency TEXT,
-  rate NUMERIC(18, 8),
+  rate NUMERIC(30, 12),
   fetched_at TIMESTAMP,
   PRIMARY KEY (from_currency, to_currency)
 );

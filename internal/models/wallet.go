@@ -16,10 +16,11 @@ type NewWalletRequest struct {
 	Currency   string `json:"currency"`
 }
 
-type WalletOutputSimple struct {
-	WalletID   int    `json:"wallet_id"`
-	WalletName string `json:"wallet_name"`
-	Currency   string `json:"currency"`
-	Balance    string `json:"balance"`
-	UserRole   string `json:"user_role"`
+type WalletOutput struct {
+	WalletID            int    `json:"wallet_id"`
+	WalletName          string `json:"wallet_name"`
+	Currency            string `json:"currency"`
+	Balance             string `json:"balance"`
+	UserCurrencyBalance string `json:"user_currency_balance"`
+	UserRole            string `json:"user_role"`
 }

@@ -16,6 +16,7 @@ type UserOutput struct {
 	ID           int    `json:"id"`
 	Username     string `json:"username"`
 	BaseCurrency string `json:"base_currency"`
+	Balance      string `json:"balance"`
 }
 
 type LoginInputs struct {

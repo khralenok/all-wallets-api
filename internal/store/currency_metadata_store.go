@@ -29,3 +29,18 @@ func GetAvailableCurrencies() ([]models.CurrencyMetadata, error) {
 
 	return availableCurrencies, nil
 }
+
+// Return decimal places for specific currency. Don't use it for definining wallet specific decimal places — instead use specialized function GetWalletDecimalPlaces.
+func GetCurrencyDecimalPlaces(currency string) (int, error) {
+	var decimalPlaces int
+
+	query := "SELECT decimal_places FROM currency_metadata WHERE code = $1"
+
+	err := database.DB.QueryRow(query, currency).Scan(&decimalPlaces)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return decimalPlaces, nil
+}

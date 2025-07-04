@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -71,12 +72,19 @@ func GetWalletByID(walletID int) (models.Wallet, error) {
 }
 
 // Return array of simplified wallet structs or an error.
-func GetWalletsByUser(userID int, context *gin.Context) ([]models.WalletOutputSimple, error) {
-	var userWallets []models.WalletOutputSimple
+func GetWalletsByUser(user models.User, context *gin.Context) ([]models.WalletOutput, error) {
+	var userWallets []models.WalletOutput
+
+	userCurrencyDecimalPlaces, err := GetCurrencyDecimalPlaces(user.BaseCurrency)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get user currency metadata"})
+		return userWallets, err
+	}
 
 	query := "SELECT w.id AS wallet_id, w.wallet_name, w.currency, w.balance, wu.user_role, cm.decimal_places FROM wallets w JOIN wallet_users wu ON wu.wallet_id = w.id JOIN currency_metadata cm ON w.currency = cm.code WHERE wu.user_id = $1"
 
-	rows, err := database.DB.Query(query, userID)
+	rows, err := database.DB.Query(query, user.ID)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get wallets list from database"})
@@ -86,7 +94,7 @@ func GetWalletsByUser(userID int, context *gin.Context) ([]models.WalletOutputSi
 	defer rows.Close()
 
 	for rows.Next() {
-		var nextWallet models.WalletOutputSimple
+		var nextWallet models.WalletOutput
 		var rawBalance int
 		var decimalPlaces int
 
@@ -94,19 +102,40 @@ func GetWalletsByUser(userID int, context *gin.Context) ([]models.WalletOutputSi
 
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't read next row in the wallets list"})
-			return []models.WalletOutputSimple{}, err
+			return []models.WalletOutput{}, err
 		}
 
 		latestTransactions, err := GetLatestTransactions(nextWallet.WalletID)
 
 		if err != nil {
 			context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't get transactions data for this wallet"})
-			return []models.WalletOutputSimple{}, err
+			return []models.WalletOutput{}, err
 		}
 
 		rawBalance += logic.CalcSumOfTransactions(latestTransactions)
 
 		nextWallet.Balance = logic.FormatOutputValue(rawBalance, decimalPlaces)
+
+		if nextWallet.Currency != user.BaseCurrency {
+
+			rate, err := GetRate(nextWallet.Currency, user.BaseCurrency, context)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't fetch exchange rates"})
+				return []models.WalletOutput{}, err
+			}
+
+			balanceToExchange, err := strconv.ParseFloat(nextWallet.Balance, 64)
+
+			if err != nil {
+				context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Some problem with exchange rates occurred"})
+				return []models.WalletOutput{}, err
+			}
+
+			nextWallet.UserCurrencyBalance = strconv.FormatFloat(balanceToExchange*rate, 'f', userCurrencyDecimalPlaces, 64)
+		} else {
+			nextWallet.UserCurrencyBalance = nextWallet.Balance
+		}
 
 		userWallets = append(userWallets, nextWallet)
 	}
@@ -114,6 +143,7 @@ func GetWalletsByUser(userID int, context *gin.Context) ([]models.WalletOutputSi
 	return userWallets, nil
 }
 
+// Return decimal places for specific wallet. Don't try to use it for definining currency specific decimal places — instead use specialized function GetCurrencyDecimalPlaces.
 func GetWalletDecimalPlaces(walletID int) (int, error) {
 	var walletCurrency string
 	var decimalPlaces int

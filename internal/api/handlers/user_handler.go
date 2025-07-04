@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -84,11 +85,25 @@ func GetProfile(context *gin.Context) {
 	userOutput.Username = user.Username
 	userOutput.BaseCurrency = user.BaseCurrency
 
-	userWallets, err := store.GetWalletsByUser(userID, context)
+	var rawBalance float64
+
+	userWallets, err := store.GetWalletsByUser(user, context)
 
 	if err != nil {
 		return
 	}
+
+	for _, value := range userWallets {
+		nextBalance, err := strconv.ParseFloat(value.UserCurrencyBalance, 64)
+
+		if err != nil {
+			return
+		}
+
+		rawBalance += nextBalance
+	}
+
+	userOutput.Balance = strconv.FormatFloat(rawBalance, 'f', -1, 64)
 
 	context.JSON(http.StatusOK, gin.H{"user": userOutput, "wallets": userWallets})
 }
