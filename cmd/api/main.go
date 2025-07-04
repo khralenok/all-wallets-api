@@ -30,9 +30,9 @@ func main() {
 	router.PUT("/delete-user", middleware.AuthMiddleware(), handlers.DeleteUser)
 
 	//Wallets Management
-	router.GET("/wallet/:id", middleware.AuthMiddleware(), handlers.GetWallet)
 	router.POST("/new-wallet", middleware.AuthMiddleware(), handlers.CreateWallet)
-	router.DELETE("/delete-wallet/:wallet_id", middleware.AuthMiddleware(), handlers.DeleteWallet)
+	router.GET("/wallet/:id", middleware.AuthMiddleware(), handlers.GetWallet)
+	router.DELETE("/delete-wallet/:id", middleware.AuthMiddleware(), handlers.DeleteWallet)
 
 	//Wallet Users Management
 	router.POST("/share-wallet", middleware.AuthMiddleware(), handlers.CreateWalletUser)

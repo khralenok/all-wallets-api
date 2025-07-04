@@ -82,7 +82,7 @@ func GetWallet(context *gin.Context) {
 // Delete the wallet and all it's users. Can be performed only by wallet user with admin role
 func DeleteWallet(context *gin.Context) {
 	userID := context.MustGet("userID").(int)
-	walletID, err := strconv.Atoi(context.Param("wallet_id"))
+	walletID, err := strconv.Atoi(context.Param("id"))
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
