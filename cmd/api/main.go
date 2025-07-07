@@ -2,7 +2,9 @@ package main
 
 import (
 	"log"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/khralenok/all-wallets-api/internal/api/handlers"
@@ -22,6 +24,14 @@ func main() {
 	defer database.DB.Close()
 
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	//User Management
 	router.POST("/signin", handlers.CreateUser)
