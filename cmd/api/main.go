@@ -51,6 +51,7 @@ func main() {
 	//Transactions Management
 	router.POST("/add-income", middleware.AuthMiddleware(), func(context *gin.Context) { handlers.CreateTransaction(context, true) })
 	router.POST("/add-expense", middleware.AuthMiddleware(), func(context *gin.Context) { handlers.CreateTransaction(context, false) })
+	router.GET("/transactions/:wallet_id", middleware.AuthMiddleware(), handlers.GetWalletTransactions)
 
 	router.Run(":8080")
 }

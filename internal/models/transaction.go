@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Transaction struct {
 	ID        int       `json:"id"`
@@ -16,4 +18,13 @@ type TransactionInput struct {
 	Amount   float64 `json:"amount"`
 	Category string  `json:"category"`
 	WalletID int     `json:"wallet_id"`
+}
+
+type TransactionOutput struct {
+	ID        int       `json:"id"`
+	Amount    string    `json:"amount"`
+	IsDeposit bool      `json:"is_deposit"`
+	Category  string    `json:"category"`
+	CreatorID int       `json:"creator_id"`
+	CreatedAt time.Time `json:"created_at"`
 }

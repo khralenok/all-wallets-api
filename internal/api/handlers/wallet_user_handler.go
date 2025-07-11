@@ -38,7 +38,7 @@ func CreateWalletUser(context *gin.Context) {
 		return
 	}
 
-	newWalletUser, err := store.AddWalletUser(input, context)
+	newWalletUser, err := store.AddWalletUser(input.WalletID, newUserId, input.UserRole, context)
 
 	if err != nil {
 		return

@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/khralenok/all-wallets-api/internal/logic"
@@ -47,6 +48,35 @@ func CreateTransaction(context *gin.Context, isDeposit bool) {
 	}
 
 	context.JSON(http.StatusCreated, gin.H{"new_transaction": newTransaction})
+}
+
+// Get user transactions
+func GetWalletTransactions(context *gin.Context) {
+	_ = context.MustGet("userID").(int)
+
+	walletID, err := strconv.Atoi(context.Param("wallet_id"))
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
+		return
+	}
+
+	transactionsRaw, err := store.GetWalletTransactions(walletID)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Can't fetch the data from database"})
+		return
+	}
+
+	decimalPlaces, err := store.GetWalletDecimalPlaces(walletID)
+
+	if err != nil {
+		return
+	}
+
+	transactions := logic.FormatTransactionOutput(transactionsRaw, decimalPlaces)
+
+	context.JSON(http.StatusOK, gin.H{"status": "OK", "transactions": transactions})
 }
 
 // Group checkups that are common for adding expense and income based on user input

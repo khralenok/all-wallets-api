@@ -1,2 +1,2 @@
-GET http://localhost:8080/wallet/1
+GET http://localhost:8080/transactions/1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTIyODU3MTYsInVzZXJfaWQiOjF9.mASXwxuvg0-hSK2otoaRTGVKUeboSeo2ilvxFrdOVCE

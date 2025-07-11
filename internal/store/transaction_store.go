@@ -59,3 +59,37 @@ func GetLatestTransactions(walletID int) ([]models.Transaction, error) {
 
 	return latestTransactions, nil
 }
+
+// Return array of all wallet transactions
+func GetWalletTransactions(walletID int) ([]models.Transaction, error) {
+	var transactions []models.Transaction
+
+	wallet, err := GetWalletByID(walletID)
+
+	if err != nil {
+		return []models.Transaction{}, err
+	}
+
+	query := "SELECT * FROM transactions WHERE wallet_id = $1"
+
+	rows, err := database.DB.Query(query, wallet.ID)
+
+	if err != nil {
+		return []models.Transaction{}, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var nextTransaction models.Transaction
+		err := rows.Scan(&nextTransaction.ID, &nextTransaction.Amount, &nextTransaction.IsDeposit, &nextTransaction.Category, &nextTransaction.WalletID, &nextTransaction.CreatorID, &nextTransaction.CreatedAt)
+
+		if err != nil {
+			return []models.Transaction{}, err
+		}
+
+		transactions = append(transactions, nextTransaction)
+	}
+
+	return transactions, nil
+}

@@ -12,10 +12,9 @@ import (
 
 // Create new wallet with provided name and currency and automatically create new wallet user with admin role based on user who call the function.
 func CreateWallet(context *gin.Context) {
-	_ = context.MustGet("userID").(int)
+	userId := context.MustGet("userID").(int)
 
 	var input models.NewWalletRequest
-	var newWalletUserRequest models.NewWalletUserRequest
 
 	if err := context.BindJSON(&input); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Bad Request", "message": "Invalid input format"})
@@ -28,10 +27,7 @@ func CreateWallet(context *gin.Context) {
 		return
 	}
 
-	newWalletUserRequest.WalletID = newWallet.ID
-	newWalletUserRequest.UserRole = "admin"
-
-	newWalletUser, err := store.AddWalletUser(newWalletUserRequest, context)
+	newWalletUser, err := store.AddWalletUser(newWallet.ID, userId, "admin", context)
 
 	if err != nil {
 		return
@@ -75,8 +71,7 @@ func GetWallet(context *gin.Context) {
 
 	outputBalance := logic.FormatOutputValue(balance, decimalPlaces)
 
-	// TO DO: Replace with correct output format
-	context.JSON(http.StatusOK, gin.H{"id": wallet.ID, "balance": outputBalance, "currency": wallet.Currency})
+	context.JSON(http.StatusOK, gin.H{"id": wallet.ID, "balance": outputBalance, "currency": wallet.Currency, "last_snapshot": wallet.LastSnapshot, "created_at": wallet.CreatedAt})
 }
 
 // Delete the wallet and all it's users. Can be performed only by wallet user with admin role

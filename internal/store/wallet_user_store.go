@@ -10,14 +10,11 @@ import (
 )
 
 // Insert new wallet user to database. Return new wallet user sruct.
-func AddWalletUser(input models.NewWalletUserRequest, context *gin.Context) (models.WalletUser, error) {
-	rawUserID, _ := context.Get("userID")
-	userID := rawUserID.(int)
-
+func AddWalletUser(walletId, userId int, userRole string, context *gin.Context) (models.WalletUser, error) {
 	var newWalletUser models.WalletUser
 
 	query := "INSERT INTO wallet_users (wallet_id, user_id, user_role) VALUES ($1, $2, $3) RETURNING *"
-	err := database.DB.QueryRow(query, input.WalletID, userID, input.UserRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
+	err := database.DB.QueryRow(query, walletId, userId, userRole).Scan(&newWalletUser.WalletID, &newWalletUser.UserID, &newWalletUser.UserRole, &newWalletUser.CreatedAt)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error", "message": "Failed to insert new wallet user data into the database"})
