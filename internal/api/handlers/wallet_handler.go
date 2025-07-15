@@ -71,7 +71,7 @@ func GetWallet(context *gin.Context) {
 
 	outputBalance := logic.FormatOutputValue(balance, decimalPlaces)
 
-	context.JSON(http.StatusOK, gin.H{"id": wallet.ID, "balance": outputBalance, "currency": wallet.Currency, "last_snapshot": wallet.LastSnapshot, "created_at": wallet.CreatedAt})
+	context.JSON(http.StatusOK, gin.H{"id": wallet.ID, "wallet_name": wallet.WalletName, "balance": outputBalance, "currency": wallet.Currency, "last_snapshot": wallet.LastSnapshot, "created_at": wallet.CreatedAt})
 }
 
 // Delete the wallet and all it's users. Can be performed only by wallet user with admin role
